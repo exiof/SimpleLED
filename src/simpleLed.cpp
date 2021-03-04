@@ -7,9 +7,12 @@ simpleLed::simpleLed(int ledPin, int ledDelay, int ledChannel)
     _ledPin = ledPin;
     _ledChannel = ledChannel;
 
-    // pinMode(_ledPin, OUTPUT);
+    #if ESP32
     ledcAttachPin(_ledPin, _ledChannel);
     ledcSetup(_ledChannel, 1000, 8);
+    #else
+    pinMode(_ledPin, OUTPUT);
+    #endif
 }
 
 void simpleLed::loop()
@@ -19,7 +22,12 @@ void simpleLed::loop()
     case reset:
         _lastUpdate = millis();
         _brightness = 1;
+        #if ESP32
         ledcWrite(_ledChannel, _brightness);
+        #else
+        analogWrite(_ledPin, _brightness);
+        #endif
+
         ledState = directionUp;
         break;
 
@@ -27,7 +35,11 @@ void simpleLed::loop()
         if ((millis() - _lastUpdate) > _ledDelay && (_brightness + 1) <= 255)
         {
             _brightness++;
+            #if ESP32
             ledcWrite(_ledChannel, _brightness);
+            #else
+            analogWrite(_ledPin, _brightness);
+            #endif
             _lastUpdate = millis();
         }
         else if (_brightness == 255)
@@ -40,7 +52,13 @@ void simpleLed::loop()
         if ((millis() - _lastUpdate) > _ledDelay && (_brightness - 1) >= 1)
         {
             _brightness--;
+
+            #if ESP32
             ledcWrite(_ledChannel, _brightness);
+            #else
+            analogWrite(_ledPin, _brightness);
+            #endif
+
             _lastUpdate = millis();
         }
         else if (_brightness == 1)
@@ -53,7 +71,11 @@ void simpleLed::loop()
         if((millis() - _lastUpdate) > _ledDelay && _brightness > 0)
         {
             _brightness--;
+            #if ESP32
             ledcWrite(_ledChannel, _brightness);
+            #else
+            analogWrite(_ledPin, _brightness);
+            #endif
             _lastUpdate = millis();
         }
         break;
